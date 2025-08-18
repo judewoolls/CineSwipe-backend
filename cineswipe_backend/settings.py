@@ -36,12 +36,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'channels',
     'api',
 
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -91,7 +93,7 @@ from decouple import config
 import dj_database_url
 
 SECRET_KEY = config('SECRET_KEY')
-DEBUG = config('DEBUG', default=False, cast=bool)
+
 
 DATABASES = {
     'default': dj_database_url.config(
@@ -99,10 +101,14 @@ DATABASES = {
     )
 }
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
 
-INSTALLED_APPS += ['corsheaders']
-MIDDLEWARE = ['corsheaders.middleware.CorsMiddleware', *MIDDLEWARE]
 CORS_ALLOWED_ORIGINS = ['http://localhost:5173']  # React dev URL
+
 
 
 
