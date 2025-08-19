@@ -72,3 +72,23 @@ def join_couple_view(request):
         except Couple.DoesNotExist:
             return Response({"error": "Invalid invite code."}, status=status.HTTP_404_NOT_FOUND)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def leave_couple_view(request):
+    """
+    Leave the couple if the user is part of one.
+    """
+    try:
+        couple = Couple.objects.get(user1=request.user)
+        couple.delete()
+        return Response({"message": "Successfully left the couple."}, status=status.HTTP_200_OK)
+    except Couple.DoesNotExist:
+        try:
+            couple = Couple.objects.get(user2=request.user)
+            couple.user2 = None
+            couple.status = 'waiting'
+            couple.save()
+            return Response({"message": "Successfully left the couple."}, status=status.HTTP_200_OK)
+        except Couple.DoesNotExist:
+            return Response({"error": "You are not part of any couple."}, status=status.HTTP_404_NOT_FOUND)
