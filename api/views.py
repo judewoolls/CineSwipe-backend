@@ -1,5 +1,5 @@
 from rest_framework import generics, permissions, status
-from .models import Movie, Couple
+from .models import Movie, Couple, Match
 from .serializers import MovieSerializer, CoupleSerializer, JoinCoupleSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -14,7 +14,36 @@ class LikedMoviesListCreateView(generics.ListCreateAPIView):
         return Movie.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        print("Performing create for liked movie")
+        movie, created = Movie.objects.get_or_create(
+            user=self.request.user,
+            movie_id=serializer.validated_data['movie_id'],
+            defaults={
+                "title": serializer.validated_data.get("title"),
+                "poster_path": serializer.validated_data.get("poster_path"),
+                "release_year": serializer.validated_data.get("release_year"),
+            }
+        )
+
+        try:
+            couple = Couple.objects.get(user1=self.request.user)
+        except Couple.DoesNotExist:
+            try:
+                couple = Couple.objects.get(user2=self.request.user)
+            except Couple.DoesNotExist:
+                couple = None
+                
+        print(f"Couple found: {couple}")
+        if couple:
+            partner = couple.user1 if couple.user2 == self.request.user else couple.user2
+            print(f"Partner found: {partner}")
+            if partner:
+                partner_liked = Movie.objects.filter(user=partner, movie_id=movie.movie_id).exists()
+                print(f"Partner liked movie: {partner_liked}")
+                if partner_liked:
+                    Match.objects.get_or_create(couple=couple, movie=movie)
+                    print(f"Match created for couple: {couple} with movie: {movie}")
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -92,3 +121,4 @@ def leave_couple_view(request):
             return Response({"message": "Successfully left the couple."}, status=status.HTTP_200_OK)
         except Couple.DoesNotExist:
             return Response({"error": "You are not part of any couple."}, status=status.HTTP_404_NOT_FOUND)
+        
