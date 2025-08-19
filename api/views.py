@@ -35,3 +35,4 @@ def couple_data_view(request):
 
     serializer = CoupleSerializer(couple)
     return Response(serializer.data, status=status.HTTP_200_OK)
+

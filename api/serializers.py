@@ -7,9 +7,9 @@ class MovieSerializer(serializers.ModelSerializer):
         fields = ['id', 'movie_id', 'title', 'poster_path', 'release_year', 'created_at']
 
 class CoupleSerializer(serializers.ModelSerializer):
-    partner1 = serializers.CharField(source='user1.username')
-    partner2 = serializers.CharField(source='user2.username', allow_null=True)
+    user1 = serializers.CharField(source='user1.username')
+    user2 = serializers.CharField(source='user2.username', allow_null=True)
 
     class Meta:
         model = Couple
-        fields = ['partner1', 'partner2', 'invite_code']
+        fields = ['user1', 'user2', 'invite_code']

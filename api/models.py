@@ -39,7 +39,10 @@ class Couple(models.Model):
     ]
 
     def __str__(self):
-        return f"Couple: {self.user1.username} & {self.user2.username}"
+        if not self.user2:
+            return f"Couple: {self.user1.username} & Waiting for partner"
+        else:
+            return f"Couple: {self.user1.username} & {self.user2.username}"
     
     def create_invite_code(self):
         invite_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
