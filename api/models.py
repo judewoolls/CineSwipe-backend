@@ -71,3 +71,13 @@ class CoupleRequest(models.Model):
 
     def __str__(self):
         return f"Request from {self.sender.username} to {self.receiver.username} for couple {self.couple.id}"
+    
+
+class Match(models.Model):
+    """Model to represent a match between two users."""
+    couple = models.ForeignKey(Couple, on_delete=models.CASCADE, related_name="matches")
+    created_at = models.DateTimeField(auto_now_add=True)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name="matches")
+
+    def __str__(self):
+        return f"Match: {self.movie.title} in {self.couple}"
