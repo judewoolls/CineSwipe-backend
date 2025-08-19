@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions, status
 from .models import Movie, Couple, Match
-from .serializers import MovieSerializer, CoupleSerializer, JoinCoupleSerializer
+from .serializers import MovieSerializer, CoupleSerializer, JoinCoupleSerializer, MatchSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -14,7 +14,6 @@ class LikedMoviesListCreateView(generics.ListCreateAPIView):
         return Movie.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        print("Performing create for liked movie")
         movie, created = Movie.objects.get_or_create(
             user=self.request.user,
             movie_id=serializer.validated_data['movie_id'],
@@ -33,16 +32,16 @@ class LikedMoviesListCreateView(generics.ListCreateAPIView):
             except Couple.DoesNotExist:
                 couple = None
                 
-        print(f"Couple found: {couple}")
+        
         if couple:
             partner = couple.user1 if couple.user2 == self.request.user else couple.user2
-            print(f"Partner found: {partner}")
+            
             if partner:
                 partner_liked = Movie.objects.filter(user=partner, movie_id=movie.movie_id).exists()
-                print(f"Partner liked movie: {partner_liked}")
+                
                 if partner_liked:
                     Match.objects.get_or_create(couple=couple, movie=movie)
-                    print(f"Match created for couple: {couple} with movie: {movie}")
+                    
 
 
 @api_view(['GET'])
@@ -122,3 +121,20 @@ def leave_couple_view(request):
         except Couple.DoesNotExist:
             return Response({"error": "You are not part of any couple."}, status=status.HTTP_404_NOT_FOUND)
         
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def matches_view(request):
+    """
+    Retrieve matches for the logged-in user.
+    """
+    try:
+        couple = Couple.objects.get(user1=request.user)
+    except Couple.DoesNotExist:
+        try:
+            couple = Couple.objects.get(user2=request.user)
+        except Couple.DoesNotExist:
+            return Response({"error": "No couple data found."}, status=status.HTTP_404_NOT_FOUND)
+
+    matches = Match.objects.filter(couple=couple)
+    serializer = MatchSerializer(matches, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

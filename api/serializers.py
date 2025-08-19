@@ -36,3 +36,12 @@ class JoinCoupleSerializer(serializers.ModelSerializer):
         if not Couple.objects.filter(invite_code=value).exists():
             raise serializers.ValidationError("Invalid invite code.")
         return value
+    
+    
+# Serializer
+class MatchSerializer(serializers.ModelSerializer):
+    movie_id = serializers.IntegerField(source='movie.movie_id')
+
+    class Meta:
+        model = Match
+        fields = ['movie_id', 'created_at']
