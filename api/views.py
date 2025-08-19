@@ -36,3 +36,17 @@ def couple_data_view(request):
     serializer = CoupleSerializer(couple)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_couple_view(request):
+    """
+    Create a couple instance with the given users.
+    """
+    if Couple.objects.filter(user1=request.user).exists() or Couple.objects.filter(user2=request.user).exists():
+        return Response({"error": "User is already in a couple."}, status=status.HTTP_400_BAD_REQUEST)
+
+    couple = Couple(user1=request.user)
+    couple.invite_code = couple.create_invite_code()
+    invite_code = couple.invite_code
+    couple.save()
+    return Response({"invite_code": invite_code}, status=status.HTTP_201_CREATED)

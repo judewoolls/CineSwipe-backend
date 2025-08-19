@@ -13,3 +13,11 @@ class CoupleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Couple
         fields = ['user1', 'user2', 'invite_code']
+        
+class CreateCoupleSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Couple
+        fields = ['user1']
+
+    
