@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions, status
 from .models import Movie, Couple
-from .serializers import MovieSerializer, CoupleSerializer
+from .serializers import MovieSerializer, CoupleSerializer, JoinCoupleSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -50,3 +50,25 @@ def create_couple_view(request):
     invite_code = couple.invite_code
     couple.save()
     return Response({"invite_code": invite_code}, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def join_couple_view(request):
+    """
+    Join an existing couple using the invite code.
+    """
+    serializer = JoinCoupleSerializer(data=request.data)
+    if serializer.is_valid():
+        invite_code = serializer.validated_data['invite_code']
+        try:
+            couple = Couple.objects.get(invite_code=invite_code)
+            if couple.user2:
+                return Response({"error": "Couple already has two members."}, status=status.HTTP_400_BAD_REQUEST)
+            couple.user2 = request.user
+            couple.status = 'active'
+            couple.save()
+            return Response({"message": "Successfully joined the couple."}, status=status.HTTP_200_OK)
+        except Couple.DoesNotExist:
+            return Response({"error": "Invalid invite code."}, status=status.HTTP_404_NOT_FOUND)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

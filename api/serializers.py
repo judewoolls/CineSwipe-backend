@@ -21,3 +21,15 @@ class CreateCoupleSerializer(serializers.ModelSerializer):
         fields = ['user1']
 
     
+    
+class JoinCoupleSerializer(serializers.ModelSerializer):
+    invite_code = serializers.CharField()
+
+    class Meta:
+        model = Couple
+        fields = ['invite_code']
+
+    def validate_invite_code(self, value):
+        if not Couple.objects.filter(invite_code=value).exists():
+            raise serializers.ValidationError("Invalid invite code.")
+        return value
