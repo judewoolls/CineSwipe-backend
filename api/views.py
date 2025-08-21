@@ -40,7 +40,8 @@ class LikedMoviesListCreateView(generics.ListCreateAPIView):
                 partner_liked = Movie.objects.filter(user=partner, movie_id=movie.movie_id).exists()
                 
                 if partner_liked:
-                    Match.objects.get_or_create(couple=couple, movie=movie)
+                    if not Match.objects.filter(couple=couple, movie__movie_id=movie.movie_id).exists():
+                        Match.objects.get_or_create(couple=couple, movie=movie)
                     
 
 
