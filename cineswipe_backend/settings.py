@@ -114,6 +114,16 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = ['http://localhost:5173']  # React dev URL
 
 
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(seconds=30),  # 30 seconds for testing
+    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=1),  # 1 minute for testing
+    "ROTATE_REFRESH_TOKENS": False,  # Change to True if you want refresh tokens to rotate on each use
+    "BLACKLIST_AFTER_ROTATION": True,  # Only matters if above is True
+    "AUTH_HEADER_TYPES": ("Bearer",),  # Ensure this matches your frontend
+}
+
 
 
 # Password validation
