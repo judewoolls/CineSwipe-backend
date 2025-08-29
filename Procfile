@@ -1,1 +1,1 @@
-web: gunicorn cineswipe-backend.wsgi
+web: gunicorn cineswipe_backend.wsgi
