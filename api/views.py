@@ -5,6 +5,17 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
+# functions to reset likes and matches 
+def reset_likes_and_matches(couple):
+    # Delete all liked movies for both users in the couple
+    Movie.objects.filter(user=couple.user1).delete()
+    if couple.user2:
+        Movie.objects.filter(user=couple.user2).delete()
+    
+    # Delete all matches associated with the couple
+    Match.objects.filter(couple=couple).delete()
+
+
 # API views for handling liked movies and couple data
 class LikedMoviesListCreateView(generics.ListCreateAPIView):
     serializer_class = MovieSerializer
@@ -78,6 +89,7 @@ def create_couple_view(request):
     couple.invite_code = couple.create_invite_code()
     invite_code = couple.invite_code
     couple.save()
+    reset_likes_and_matches(couple)  # Reset likes and matches when a new couple is created
     return Response({"invite_code": invite_code}, status=status.HTTP_201_CREATED)
 
 
@@ -97,6 +109,7 @@ def join_couple_view(request):
             couple.user2 = request.user
             couple.status = 'active'
             couple.save()
+            reset_likes_and_matches(couple)  # Reset likes and matches when a new user joins
             return Response({"message": "Successfully joined the couple."}, status=status.HTTP_200_OK)
         except Couple.DoesNotExist:
             return Response({"error": "Invalid invite code."}, status=status.HTTP_404_NOT_FOUND)
@@ -110,6 +123,7 @@ def leave_couple_view(request):
     """
     try:
         couple = Couple.objects.get(user1=request.user)
+        reset_likes_and_matches(couple)  # Reset likes and matches when a user leaves
         couple.delete()
         return Response({"message": "Successfully left the couple."}, status=status.HTTP_200_OK)
     except Couple.DoesNotExist:
@@ -118,6 +132,7 @@ def leave_couple_view(request):
             couple.user2 = None
             couple.status = 'waiting'
             couple.save()
+            reset_likes_and_matches(couple)  # Reset likes and matches when a user leaves
             return Response({"message": "Successfully left the couple."}, status=status.HTTP_200_OK)
         except Couple.DoesNotExist:
             return Response({"error": "You are not part of any couple."}, status=status.HTTP_404_NOT_FOUND)
