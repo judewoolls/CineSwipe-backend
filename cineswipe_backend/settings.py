@@ -111,7 +111,7 @@ REST_FRAMEWORK = {
 
 }
 
-CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'https://cine-swipe-frontend.vercel.app/']  # React dev URL
+CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'https://cine-swipe-frontend.vercel.app']  # React dev URL
 
 
 from datetime import timedelta
